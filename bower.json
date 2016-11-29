@@ -1,0 +1,20 @@
+{
+	"name": "gitface",
+	"authors": [
+		"Nicolas Roy-Renaud <nroyrenaud@linux.com>"
+	],
+	"main": "",
+	"moduleType": [],
+	"license": "GPL3",
+	"private": true,
+	"ignore": [
+		"**/.*",
+		"node_modules",
+		"bower_components",
+	],
+	"dependencies": {
+		"angular-bootstrap": "^1.1.1",
+		"angular": "angularjs#^1.4.9",
+		"lodash": "^4.1.0"
+	}
+}

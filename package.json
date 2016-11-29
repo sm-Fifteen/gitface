@@ -1,0 +1,25 @@
+{
+  "name": "gitface",
+  "version": "0.0.0",
+  "description": "**Clone and run for a quick way to see an Electron in action.**",
+  "author": "",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron ."
+  },
+  "engines": {
+    "electron": "^1.4.1"
+  },
+  "dependencies": {
+    "nodegit": "^0.16.0"
+  },
+  "keywords": [
+    "git",
+    "git-gui",
+    "electron"
+  ],
+  "license": "GPL-3.0",
+  "devDependencies": {
+    "electron-rebuild": "^1.4.0"
+  }
+}

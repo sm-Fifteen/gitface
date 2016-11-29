@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title>Hello World!</title>
+		<link href="bootstrap/css/bootstrap.min.css" rel="stylesheet" type="text/css" media="all" />
+	</head>
+	<body ng-app="gitface" ng-controller="mainUiCtrl as ctrl">
+		<header>Header bar</header>
+
+		<main>
+			<h1>Main view!</h1>
+			<!-- All of the Node.js APIs are available in this renderer process. -->
+			We are using Node.js {{nodeVersion}},
+			Chromium {{chromeVersion}},
+			and Electron {{electronVersion}}.
+			<br/>
+			<button id="testOpenRepo" ng-click="openRepoSelector()">Open repo window</button>
+		</main>
+	</body>
+
+	<script>
+		// You can also require other files to run in this process
+		require('./renderer.js')
+	</script>
+</html>
