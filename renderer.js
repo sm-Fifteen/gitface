@@ -2,9 +2,9 @@
 // be executed in the renderer process for that window.
 // All of the Node.js APIs are available in this process.
 
-require('./bower_components/angular/angular.js');
-require('./bower_components/angular-bootstrap/ui-bootstrap-tpls.js');
-require('./bower_components/lodash/dist/lodash.js');
+require('angular');
+require('angular-ui-bootstrap');
+const _ =  require('lodash');
 
 var gitface = angular.module('gitface', ['ui.bootstrap']);
 
