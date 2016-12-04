@@ -8,7 +8,7 @@ const _ =  require('lodash');
 
 var gitface = angular.module('gitface', ['ui.bootstrap']);
 
-gitface.constant('ipc', require('electron').ipcRenderer);
+gitface.constant('ipc', require('ipc-promise'));
 
 gitface.controller('mainUiCtrl', ["$scope", "$uibModal", function($scope, $uibModal){
 	$scope.nodeVersion = process.versions.node;
@@ -27,16 +27,12 @@ gitface.controller('mainUiCtrl', ["$scope", "$uibModal", function($scope, $uibMo
 
 gitface.controller('repoSelectorCtrl', ["$scope", "ipc", function($scope, ipc) {
 	$scope.openDirectoryPicker = function() {
-		ipc.send('open-repo-selector');
+		ipc.send('open-directory-picker').then(function(newPath) {
+			return ipc.send('change-directory', newPath);
+		}).then(function(newPath){
+			console.log("Changed directory : " + newPath);
+		});
 	}
-
-	ipc.on('cd-inside-repo', function (event, newPath) {
-		console.log("Now in this repo : " + newPath);
-	})
-
-	ipc.on('cd-inside-directory', function (event, newPath) {
-		console.log("Now in this directory : " + newPath);
-	})
 }]);
 
 const path = require('path');

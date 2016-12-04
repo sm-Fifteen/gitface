@@ -61,25 +61,35 @@ app.on('activate', function () {
 // code. You can also put them in separate files and require them here.
 
 
-const ipc = require('electron').ipcMain
-const dialog = require('electron').dialog
+const ipc = require('ipc-promise');
+const dialog = require('electron').dialog;
 const fs = require('fs');
 const NodeGit = require("nodegit");
 
-ipc.on('open-repo-selector', function(ev) {
-	var filePaths = dialog.showOpenDialog(mainWindow, {
-		properties: ["openDirectory", "createDirectory"]
-	})
+var currentDirectory = ".";
+var currentRepo;
 
-	if(!filePaths) return;
-	var pathToRepo = filePaths[0];
+ipc.on('open-directory-picker', function(ev) {
+	return new Promise(function (fulfill, reject){
+		var filePaths = dialog.showOpenDialog(mainWindow, {
+			defaultPath: currentDirectory,
+			properties: ["openDirectory", "createDirectory"],
+		})
 
-	safelyOpenRepo(pathToRepo).then(function(repoObject){
-		if(repoObject) {
-			ev.sender.send('cd-inside-repo', repoObject.path());
+		if(!filePaths) {
+			reject();
 		} else {
-			ev.sender.send('cd-inside-directory', pathToRepo);
+			fulfill(filePaths[0]);
 		}
+	});
+});
+
+ipc.on('change-directory', function(pathToRepo) {
+	return safelyOpenRepo(pathToRepo).then(function(repoObject){
+		currentRepo = repoObject;
+		currentDirectory = pathToRepo;
+		
+		return currentDirectory;
 	}, function(errorMessage) {
 		dialog.showErrorBox('Error while opening repository', errorMessage);
 		// Nothing else
@@ -90,7 +100,6 @@ function safelyOpenRepo(pathToRepo) {
 	// Libgit2 doesn't provide error objects on its public API.
 	// We need our own logic to safely open and clone repos
 
-	console.log(pathToRepo);
 	var fsStat = Promise.denodeify(require('fs').stat);
 
 	return fsStat(pathToRepo).then(function(stats){
