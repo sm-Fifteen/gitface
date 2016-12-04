@@ -22,15 +22,24 @@ gitface.controller('mainUiCtrl', ["$scope", "$uibModal", function($scope, $uibMo
 			controllerAs: '$ctrl',
 			size: 'lg',
 		});
+		
+		repoSelector.result.then(function(newPath) {
+			reactToCD(newPath);
+		});
+	}
+	
+	function reactToCD(newPath) {
+		$scope.cwd = newPath;
 	}
 }]);
 
-gitface.controller('repoSelectorCtrl', ["$scope", "ipc", function($scope, ipc) {
+gitface.controller('repoSelectorCtrl', ["$scope", "ipc", "$uibModalInstance", function($scope, ipc, $uibModalInstance) {
 	$scope.openDirectoryPicker = function() {
 		ipc.send('open-directory-picker').then(function(newPath) {
 			return ipc.send('change-directory', newPath);
 		}).then(function(newPath){
 			console.log("Changed directory : " + newPath);
+			$uibModalInstance.close(newPath);
 		});
 	}
 }]);
