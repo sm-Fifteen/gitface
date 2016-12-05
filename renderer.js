@@ -8,7 +8,7 @@ const _ =  require('lodash');
 
 var gitface = angular.module('gitface', ['ui.bootstrap']);
 
-gitface.constant('ipc', require('ipc-promise'));
+gitface.constant('ipc', require('./renderer-ipc-calls.js'));
 
 gitface.controller('mainUiCtrl', ["$scope", "$uibModal", function($scope, $uibModal){
 	$scope.nodeVersion = process.versions.node;
@@ -35,8 +35,8 @@ gitface.controller('mainUiCtrl', ["$scope", "$uibModal", function($scope, $uibMo
 
 gitface.controller('repoSelectorCtrl', ["$scope", "ipc", "$uibModalInstance", function($scope, ipc, $uibModalInstance) {
 	$scope.openDirectoryPicker = function() {
-		ipc.send('open-directory-picker').then(function(newPath) {
-			return ipc.send('change-directory', newPath);
+		ipc.openDirectoryPicker().then(function(newPath) {
+			return ipc.changeDirectory(newPath);
 		}).then(function(newPath){
 			console.log("Changed directory : " + newPath);
 			$uibModalInstance.close(newPath);
