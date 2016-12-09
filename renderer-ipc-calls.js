@@ -6,5 +6,8 @@ module.exports = {
 	},
 	changeDirectory: function(newPath) {
 		return ipc.send('change-directory', newPath);
+	},
+	getRepoPath: function() {
+		return ipc.send('get-repo-path');
 	}
 }

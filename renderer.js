@@ -10,7 +10,7 @@ var gitface = angular.module('gitface', ['ui.bootstrap']);
 
 gitface.constant('ipc', require('./renderer-ipc-calls.js'));
 
-gitface.controller('mainUiCtrl', ["$scope", "$uibModal", function($scope, $uibModal){
+gitface.controller('mainUiCtrl', ["$scope", "ipc", "$uibModal", function($scope, ipc, $uibModal){
 	$scope.nodeVersion = process.versions.node;
 	$scope.chromeVersion = process.versions.chrome;
 	$scope.electronVersion = process.versions.electron;
@@ -22,14 +22,16 @@ gitface.controller('mainUiCtrl', ["$scope", "$uibModal", function($scope, $uibMo
 			controllerAs: '$ctrl',
 			size: 'lg',
 		});
-		
+
 		repoSelector.result.then(function(newPath) {
 			reactToCD(newPath);
 		});
 	}
-	
+
 	function reactToCD(newPath) {
-		$scope.cwd = newPath;
+		ipc.getRepoPath().then(function(pathDict) {
+			$scope.cwd = pathDict.cwd;
+		});
 	}
 }]);
 
@@ -42,6 +44,8 @@ gitface.controller('repoSelectorCtrl', ["$scope", "ipc", "$uibModalInstance", fu
 			$uibModalInstance.close(newPath);
 		});
 	}
+
+	$scope.cloneUrl = "";
 }]);
 
 const path = require('path');

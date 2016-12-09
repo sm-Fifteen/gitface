@@ -16,7 +16,8 @@
 			and Electron {{electronVersion}}.
 			<br/>
 			<button id="testOpenRepo" ng-click="openRepoSelector()">Open repo window</button>
-			<p>Current directory : {{cwd}}</p>
+			<p ng-if="cwd">Current directory : {{cwd}}</p>
+			<p ng-if="!cwd">No directory selected</p>
 		</main>
 	</body>
 

@@ -1,12 +1,30 @@
-<html>
-	<head>
-		<meta charset="UTF-8">
-		<title>Hello World!</title>
-	</head>
-	<body>
-		<p>
-		I should have put something in there.
-		</p>
-		<button ng-click="openDirectoryPicker()">Pick a directory</button>
-	</body>
-</html>
+<div class="modal-body">
+	<h3>Select a new repository</h3>
+	<div class="row">
+		<div class="col-xs-6">
+			<h4>Change directory</h4>
+			<p>Select an existing git repository on your own computer or select
+				a normal directory and make it into a new repository.</p>
+			<button class="btn btn-default" ng-click="openDirectoryPicker()">Pick a directory</button>
+		</div>
+		<div class="col-xs-6">
+			<h4>Clone from remote</h4>
+			<p>Create a local copy of a git project from a remote machine.</p>
+			<!--<form ng-submit="">
+				<div class="input-group">
+					<input class="form-control" ng-model='cloneUrl' type="url"></input>
+					<span class="input-group-btn">
+						<button type="submit" class="btn">Check</button>
+					</span>
+				</div>
+			</form>
+			<p></p>
+			<div>
+				<button class="btn btn-default">Pick a destination</button>
+			</div>-->
+			<p>That's going to come later, though, since that's going to require
+				a bunch of SSH and HTTPS stuff and I need to pick my priorities
+				if I want that thing to get anywhere.</p>
+		</div>
+	</div>
+</div>

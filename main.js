@@ -88,11 +88,18 @@ ipc.on('change-directory', function(pathToRepo) {
 	return safelyOpenRepo(pathToRepo).then(function(repoObject){
 		currentRepo = repoObject;
 		currentDirectory = pathToRepo;
-		
+
 		return currentDirectory;
 	}, function(errorMessage) {
 		dialog.showErrorBox('Error while opening repository', errorMessage);
 		// Nothing else
+	})
+})
+
+ipc.on('get-repo-path', function() {
+	return Promise.resolve({
+		cwd: currentDirectory,
+		gitPath: (currentRepo) ? currentRepo.path() : undefined,
 	})
 })
 
