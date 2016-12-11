@@ -4,9 +4,20 @@
 		<meta charset="UTF-8">
 		<title>Hello World!</title>
 		<link href="node_modules/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet" type="text/css" media="all" />
+		<link href="assets/css/main-ui.css" rel="stylesheet" type="text/css" />
+		<link href="assets/icons/atlas.svg" type="image/svg+xml" />
 	</head>
 	<body ng-app="gitface" ng-controller="mainUiCtrl as ctrl">
-		<header>Header bar</header>
+		<header>
+			<div class="input-group input-group">
+				<div class="input-group-btn input-group-sm">
+					<button id="testOpenRepo" ng-click="openRepoSelector()" class="btn btn-sm">
+					<svg class="svg-icon"><use xlink:href="assets/icons/atlas.svg#git-scm"></use></svg>
+					</button>
+				</div>
+				<input type="text" class="form-control" ng-value="cwd" readonly placeholder="No directory selected">
+			</div>
+		</header>
 
 		<main>
 			<h1>Main view!</h1>
@@ -15,9 +26,6 @@
 			Chromium {{chromeVersion}},
 			and Electron {{electronVersion}}.
 			<br/>
-			<button id="testOpenRepo" ng-click="openRepoSelector()">Open repo window</button>
-			<p ng-if="cwd">Current directory : {{cwd}}</p>
-			<p ng-if="!cwd">No directory selected</p>
 		</main>
 	</body>
 
