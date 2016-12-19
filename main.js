@@ -67,7 +67,7 @@ const fs = require('fs');
 const NodeGit = require("nodegit");
 
 var currentDirectory = ".";
-var currentRepo;
+var gitDirPath;
 
 ipc.on('open-directory-picker', function(ev) {
 	return new Promise(function (fulfill, reject){
@@ -85,41 +85,70 @@ ipc.on('open-directory-picker', function(ev) {
 });
 
 ipc.on('change-directory', function(pathToRepo) {
-	return safelyOpenRepo(pathToRepo).then(function(repoObject){
-		currentRepo = repoObject;
+    var dirPromise = getDirectory();
+    dirPromise.catch(abortOperation);
+
+    return dirPromise.then(function(path) {
+        return NodeGit.Repository.open(pathToRepo);
+    }).then(function(repoObject){
 		currentDirectory = pathToRepo;
 
-		return currentDirectory;
-	}, function(errorMessage) {
-		dialog.showErrorBox('Error while opening repository', errorMessage);
-		// Nothing else
-	})
+		return true;
+	}).catch(function(errorMessage) {
+        currentDirectory = pathToRepo;
+
+		return false;
+	});
 })
 
 ipc.on('get-repo-path', function() {
 	return Promise.resolve({
 		cwd: currentDirectory,
-		gitPath: (currentRepo) ? currentRepo.path() : undefined,
+		gitPath: (gitDirPath) ? gitDirPath.path() : undefined,
 	})
 })
 
-function safelyOpenRepo(pathToRepo) {
+ipc.on('git-status', function() {
+	if (!gitDirPath) {
+		return Promise.resolve()
+	}
+})
+
+function openRepo(pathToRepo) {
 	// Libgit2 doesn't provide error objects on its public API.
 	// We need our own logic to safely open and clone repos
 
-	var fsStat = Promise.denodeify(require('fs').stat);
+    var dirPromise = getDirectory();
+    dirPromise.catch(abortOperation);
 
-	return fsStat(pathToRepo).then(function(stats){
-		if (stats.isDirectory()) {
-			return pathToRepo;
-		} else {
-			throw "Path is not a valid directory";
-		}
-	}).then(function(pathToRepo) {
-		return NodeGit.Repository.open(pathToRepo);
-	}).then(function (repoObject) {
-		return repoObject;
-	}, function(error){
-		return; // No parameter, not a repo
-	});
+    return dirPromise.then(function(path) {
+        return NodeGit.Repository.open(pathToRepo);
+    }).catch(abortOperation);
 }
+
+function getDirectory(path) {
+	// Most of the time, there won't be a path, we just take the one we know.
+    if(!path) path = currentDirectory;
+
+    var fsStat = Promise.denodeify(require('fs').stat);
+
+    if(path) {
+        return fsStat(path).then(function(stats){
+            if (stats.isDirectory()) {
+                // TODO : Keep a file node instead of a path and resolve that into a path?
+                return path;
+            } else {
+                throw "'" + path + "' is not a valid directory";
+            }
+        });
+    } else {
+        return Promise.reject("Current directory is still unset");
+    }
+}
+
+function abortOperation(errorMessage) {
+    dialog.showErrorBox('Error while opening repository', errorMessage);
+}
+
+// TmpRepoObject.isInit()
+// .getStatus
