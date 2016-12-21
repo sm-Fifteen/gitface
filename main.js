@@ -66,8 +66,7 @@ const dialog = require('electron').dialog;
 const fs = require('fs');
 const NodeGit = require("nodegit");
 
-var currentDirectory = ".";
-var gitDirPath;
+var currentDirectory = undefined;
 
 ipc.on('open-directory-picker', function(ev) {
 	return new Promise(function (fulfill, reject){
@@ -85,46 +84,29 @@ ipc.on('open-directory-picker', function(ev) {
 });
 
 ipc.on('change-directory', function(pathToRepo) {
-    var dirPromise = getDirectory();
+    var dirPromise = getDirectory(pathToRepo);
     dirPromise.catch(abortOperation);
 
-    return dirPromise.then(function(path) {
-        return NodeGit.Repository.open(pathToRepo);
-    }).then(function(repoObject){
-		currentDirectory = pathToRepo;
+    return dirPromise.then(NodeGit.Repository.open).then(function(repoObject){
+		currentDirectory = repoObject.path();
 
 		return true;
 	}).catch(function(errorMessage) {
-        currentDirectory = pathToRepo;
+        currentDirectory = repoObject.path();
 
 		return false;
 	});
 })
 
 ipc.on('get-repo-path', function() {
-	return Promise.resolve({
-		cwd: currentDirectory,
-		gitPath: (gitDirPath) ? gitDirPath.path() : undefined,
-	})
+	return Promise.resolve(currentDirectory);
 })
 
 ipc.on('git-status', function() {
-	if (!gitDirPath) {
-		return Promise.resolve()
-	}
+	return getDirectory().then(NodeGit.Repository.open).then(function(repoObject) {
+	    return repoObject.getStatus();
+    }).then(serializeStatus);
 })
-
-function openRepo(pathToRepo) {
-	// Libgit2 doesn't provide error objects on its public API.
-	// We need our own logic to safely open and clone repos
-
-    var dirPromise = getDirectory();
-    dirPromise.catch(abortOperation);
-
-    return dirPromise.then(function(path) {
-        return NodeGit.Repository.open(pathToRepo);
-    }).catch(abortOperation);
-}
 
 function getDirectory(path) {
 	// Most of the time, there won't be a path, we just take the one we know.
@@ -144,6 +126,18 @@ function getDirectory(path) {
     } else {
         return Promise.reject("Current directory is still unset");
     }
+}
+
+function serializeStatus(statusList) {
+	var statusMap = [];
+	statusList.forEach(function(statusFile) {
+		statusMap.push({
+			path: statusFile.path(),
+			name: path.basename(statusFile.path()),
+			status: statusFile.status(),
+		});
+	});
+	return statusMap;
 }
 
 function abortOperation(errorMessage) {

@@ -29,21 +29,24 @@ gitface.controller('mainUiCtrl', ["$scope", "ipc", "$uibModal", function($scope,
 		});
 	}
 
+	$scope.testStatus = function() {
+		ipc.git.status().then(function(statusJson){
+			console.log(statusJson);
+		});
+	}
+
 	function reactToCD(newPath) {
 		ipc.getRepoPath().then(function(pathDict) {
-			$scope.cwd = pathDict.cwd;
+			$scope.cwd = pathDict;
 		});
 	}
 }]);
 
 gitface.controller('repoSelectorCtrl', ["$scope", "ipc", "$uibModalInstance", function($scope, ipc, $uibModalInstance) {
 	$scope.openDirectoryPicker = function() {
-		ipc.openDirectoryPicker().then(function(newPath) {
-			return ipc.changeDirectory(newPath);
-		}).then(function(newPath){
-			console.log("Changed directory : " + newPath);
-			$uibModalInstance.close(newPath);
-		});
+		ipc.openDirectoryPicker()
+				.then(ipc.changeDirectory)
+				.then($uibModalInstance.close);
 	}
 
 	$scope.cloneUrl = "";

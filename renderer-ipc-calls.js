@@ -9,5 +9,10 @@ module.exports = {
 	},
 	getRepoPath: function() {
 		return ipc.send('get-repo-path');
+	},
+	git: {
+		status: function() {
+            return ipc.send('git-status');
+		}
 	}
 }
