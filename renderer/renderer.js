@@ -4,7 +4,7 @@
 
 require('angular');
 require('angular-ui-bootstrap');
-const _ =  require('lodash');
+const _ = require('lodash');
 require('angular-ivh-treeview/dist/ivh-treeview.js');
 
 var gitface = angular.module('gitface', ['ui.bootstrap', 'ivh.treeview']);
