@@ -27,13 +27,19 @@ module.exports = function(electron, app, mainWindow) {
 	    dirPromise.catch(abortOperation);
 
 	    return dirPromise.then(NodeGit.Repository.open).then(function(repoObject){
-			currentDirectory = repoObject.path();
+			currentDirectory = pathToRepo;
 
-			return true;
+			return {
+				dirPath: currentDirectory,
+				isRepo: true,
+			};
 		}).catch(function(errorMessage) {
-	        currentDirectory = repoObject.path();
+	        currentDirectory = pathToRepo;
 
-			return false;
+			return {
+				dirPath: currentDirectory,
+				isRepo: false,
+			};
 		});
 	})
 

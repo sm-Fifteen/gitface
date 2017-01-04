@@ -9,13 +9,9 @@ require('angular-ivh-treeview/dist/ivh-treeview.js');
 
 var gitface = angular.module('gitface', ['ui.bootstrap', 'ivh.treeview']);
 
-gitface.constant('ipc', require('./renderer-ipc-calls.js'));
+require('./ng-services/repo-service.js')(gitface);
 
-gitface.controller('mainUiCtrl', ["$scope", "ipc", "$uibModal", function($scope, ipc, $uibModal){
-	$scope.nodeVersion = process.versions.node;
-	$scope.chromeVersion = process.versions.chrome;
-	$scope.electronVersion = process.versions.electron;
-
+gitface.controller('mainUiCtrl', ["$scope", "repoService", "$uibModal", function($scope, repoService, $uibModal){
 	$scope.openRepoSelector = function() {
 		var repoSelector = $uibModal.open({
 			templateUrl: 'selectRepo.html',
@@ -23,36 +19,25 @@ gitface.controller('mainUiCtrl', ["$scope", "ipc", "$uibModal", function($scope,
 			controllerAs: '$ctrl',
 			size: 'lg',
 		});
-
-		repoSelector.result.then(function(newPath) {
-			reactToCD(newPath);
-		});
 	}
 
 	$scope.testStatus = function() {
-		ipc.git.status().then(function(statusJson){
-			console.log(statusJson);
-		});
-	}
-
-	function reactToCD(newPath) {
-		ipc.getRepoPath().then(function(pathDict) {
-			$scope.cwd = pathDict;
-		});
+		//ipc.git.status().then(function(statusJson){
+		//	console.log(statusJson);
+		//});
 	}
 }]);
 
-gitface.controller('repoSelectorCtrl', ["$scope", "ipc", "$uibModalInstance", function($scope, ipc, $uibModalInstance) {
+gitface.controller('repoSelectorCtrl', ["$scope", "repoService", "$uibModalInstance", function($scope, repoService, $uibModalInstance) {
 	$scope.openDirectoryPicker = function() {
-		ipc.openDirectoryPicker()
-				.then(ipc.changeDirectory)
-				.then($uibModalInstance.close);
+		repoService.openDirectoryPicker()
+		//		.then($uibModalInstance.close);
 	}
 
 	$scope.cloneUrl = "";
 }]);
 
-gitface.controller('FileChangesCtrl', ["$scope", "ipc", function($scope, ipc){
+gitface.controller('FileChangesCtrl', ["$scope", function($scope){
 	$scope.unstagedChanges = [{
 		label: 'repo',
 		value: '',
