@@ -33,6 +33,8 @@ function createWindow () {
 		// when you should delete the corresponding element.
 		mainWindow = null
 	})
+
+	require('./main/gitface.js')(electron, app, mainWindow);
 }
 
 // This method will be called when Electron has finished
@@ -56,5 +58,3 @@ app.on('activate', function () {
 		createWindow()
 	}
 })
-
-require('./main/gitface.js')(electron, app, mainWindow);

@@ -1,6 +1,6 @@
 module.exports = function(electron, app, mainWindow) {
 	const Promise = require('promise')
-	const ipc = require('ipc-promise');
+	const ipc = require('electron').ipcMain
 	const dialog = electron.dialog;
 	const fs = require('fs');
 	const NodeGit = require("nodegit");
@@ -8,25 +8,23 @@ module.exports = function(electron, app, mainWindow) {
 	var currentDirectory = undefined;
 
 	ipc.on('open-directory-picker', function(ev) {
-		return new Promise(function (fulfill, reject){
-			var filePaths = dialog.showOpenDialog(mainWindow, {
-				defaultPath: currentDirectory,
-				properties: ["openDirectory", "createDirectory"],
-			})
+		var filePaths = dialog.showOpenDialog(mainWindow, {
+			defaultPath: currentDirectory,
+			properties: ["openDirectory", "createDirectory"],
+		})
 
-			if(!filePaths) {
-				reject();
-			} else {
-				fulfill(filePaths[0]);
-			}
-		});
+		if(!filePaths) {
+			 ev.returnValue = undefined;
+		} else {
+			 ev.returnValue = filePaths[0];
+		}
 	});
 
-	ipc.on('change-directory', function(pathToRepo) {
+	ipc.on('change-directory', function(ev, pathToRepo) {
 	    var dirPromise = getDirectory(pathToRepo);
-	    dirPromise.catch(abortOperation);
+	    //dirPromise.catch(abortOperation);
 
-	    return dirPromise.then(NodeGit.Repository.open).then(function(repoObject){
+	    dirPromise.then(NodeGit.Repository.open).then(function(repoObject){
 			currentDirectory = pathToRepo;
 
 			return {
@@ -40,11 +38,9 @@ module.exports = function(electron, app, mainWindow) {
 				dirPath: currentDirectory,
 				isRepo: false,
 			};
+		}).then(function(repoData) {
+			ev.sender.send('changed-directory', repoData)
 		});
-	})
-
-	ipc.on('get-repo-path', function() {
-		return Promise.resolve(currentDirectory);
 	})
 
 	ipc.on('git-status', function() {
@@ -83,9 +79,5 @@ module.exports = function(electron, app, mainWindow) {
 			});
 		});
 		return statusMap;
-	}
-
-	function abortOperation(errorMessage) {
-	    dialog.showErrorBox('Error while opening repository', errorMessage);
 	}
 }

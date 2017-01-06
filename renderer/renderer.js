@@ -11,6 +11,8 @@ var gitface = angular.module('gitface', ['ui.bootstrap', 'ivh.treeview']);
 
 require('./ng-services/repo-service.js')(gitface);
 
+gitface.constant('ipc', require('electron').ipcRenderer);
+
 gitface.controller('mainUiCtrl', ["$scope", "repoService", "$uibModal", function($scope, repoService, $uibModal){
 	$scope.openRepoSelector = function() {
 		var repoSelector = $uibModal.open({
@@ -20,6 +22,10 @@ gitface.controller('mainUiCtrl', ["$scope", "repoService", "$uibModal", function
 			size: 'lg',
 		});
 	}
+
+	repoService.events.changeDirectory.subscribe($scope, function(ev, newDirectory) {
+		$scope.cwd = newDirectory;
+	});
 
 	$scope.testStatus = function() {
 		//ipc.git.status().then(function(statusJson){
@@ -31,7 +37,7 @@ gitface.controller('mainUiCtrl', ["$scope", "repoService", "$uibModal", function
 gitface.controller('repoSelectorCtrl', ["$scope", "repoService", "$uibModalInstance", function($scope, repoService, $uibModalInstance) {
 	$scope.openDirectoryPicker = function() {
 		repoService.openDirectoryPicker()
-		//		.then($uibModalInstance.close);
+				.then($uibModalInstance.close);
 	}
 
 	$scope.cloneUrl = "";
