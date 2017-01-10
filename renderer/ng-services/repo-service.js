@@ -6,8 +6,14 @@ module.exports = function(gitface) {
 		document.ipcRenderer = ipc;
 		console.log(document.ipcRenderer);
 
+		ipc.on('debug', function(ev, arg) {
+			console.log(arg);
+		})
+
 		var repoService = (function() {
-			that = this;
+			this.repoData = undefined;
+			this.commits = {};
+			var that = this;
 
 			function openDirectoryPicker() {
 				return new Promise(function(resolve, reject) {
