@@ -2,6 +2,10 @@ const Promise = require('promise');
 
 module.exports = function(gitface) {
 	gitface.factory('repoService', ['$rootScope', 'ipc', function($rootScope, ipc) {
+		console.info("Here's an instance of the IPC for testing purposes : ")
+		document.ipcRenderer = ipc;
+		console.log(document.ipcRenderer);
+
 		var repoService = (function() {
 			that = this;
 
