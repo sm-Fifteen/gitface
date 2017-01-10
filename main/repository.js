@@ -81,6 +81,35 @@ Repository.serializeReference = function(reference) {
 	return sRef
 }
 
+Repository.serializeCommit = function(commitObject) {
+	var nParents = commitObject.parentcount();
+	// Git normally labels its parents so that commit^0 is the commit itself
+	// Libgit considers parent 0 to be the first parent instead.
+	var parentCommits = [];
+
+	// TODO : Replace this bit with .parents() is possible, couldn't get it to work.
+	for (var i = 0; i < nParents; i++) {
+		parentCommits.push(commitObject.parentId(i).tostrS());
+	}
+
+	var sCommit = {
+		hash: commitObject.id(),
+		parents: parentCommits,
+		author: {
+			name: commitObject.author().name(),
+			email: commitObject.author().email(),
+		},
+		committer: {
+			name: commitObject.committer().name(),
+			email: commitObject.committer().email(),
+		},
+		date: commitObject.date(),
+		message: commitObject.message(),
+	}
+
+	return sCommit;
+}
+
 Repository.prototype.getHead = function() {
 	var dirPromise = this.getDirectory();
 
@@ -122,7 +151,7 @@ Repository.prototype.getCommitChain = function(firstCommit, rangeLimit) {
 	return dirPromise.then(NodeGit.Repository.open).then(function(repoObject) {
 		var revWalk = NodeGit.Revwalk.create(repoObject);
 		// Sets commit as starting point for revWalk
-		revWalk.pushRef(firstCommit);
+		revWalk.push(firstCommit);
 		// Hides nth generation parent of firstCommit and its ancestors
 		revWalk.hideRef(firstCommit + "~" + rangeLimit); // FIXME : Unsafe?
 		console.log("Ready to walk");
@@ -130,32 +159,7 @@ Repository.prototype.getCommitChain = function(firstCommit, rangeLimit) {
 	}).then(function(commitList) {
 		var serializedCommitList = [];
 		for (commitObject of commitList) {
-			var nParents = commitObject.parentcount();
-			// Git normally labels its parents so that commit^0 is the commit itself
-			// Libgit considers parent 0 to be the first parent instead.
-			var parentCommits = [];
-
-			// TODO : Replace this bit with .parents() is possible, couldn't get it to work.
-			for (var i = 0; i < nParents; i++) {
-				parentCommits.push(commitObject.parentId(i).tostrS());
-			}
-
-			var sCommit = {
-				hash: commitObject.id(),
-				parents: parentCommits,
-				author: {
-					name: commitObject.author().name(),
-					email: commitObject.author().email(),
-				},
-				committer: {
-					name: commitObject.committer().name(),
-					email: commitObject.committer().email(),
-				},
-				date: commitObject.date(),
-				message: commitObject.message(),
-			}
-
-			serializedCommitList.push(sCommit);
+			serializedCommitList.push(Repository.serializeCommit(commitObject));
 		}
 		return serializedCommitList;
 	})

@@ -62,8 +62,8 @@ module.exports = function(electron, app, mainWindow) {
 
 	ipc.on('git-status', function(ev) {
 		return repo.getDirectory().then(NodeGit.Repository.open).then(function(repoObject) {
-		    return repoObject.getStatus();
-	    }).then(serializeStatus);
+			return repoObject.getStatus();
+		}).then(serializeStatus);
 	})
 
 	function serializeStatus(statusList) {

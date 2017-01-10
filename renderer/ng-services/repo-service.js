@@ -39,6 +39,11 @@ module.exports = function(gitface) {
 
 			ipc.on('reply-ref-data', function(ev, refData) {
 				console.log(refData);
+				ipc.send('get-commit-chain', refData.HEAD.id, 20)
+			});
+
+			ipc.on('reply-commit-chain', function(ev, commitChain) {
+				console.log(commitChain);
 			});
 
 			// subscribe and notify based on this :
