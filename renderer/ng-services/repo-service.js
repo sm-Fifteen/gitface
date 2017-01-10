@@ -39,7 +39,7 @@ module.exports = function(gitface) {
 
 			ipc.on('reply-ref-data', function(ev, refData) {
 				console.log(refData);
-				ipc.send('get-commit-chain', refData.HEAD.id, 20)
+				ipc.send('get-commit-chain', refData.HEAD.id, 15)
 			});
 
 			ipc.on('reply-commit-chain', function(ev, commitChain) {

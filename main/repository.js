@@ -145,17 +145,22 @@ Repository.prototype.getReferences = function() {
 	})
 }
 
-Repository.prototype.getCommitChain = function(firstCommit, rangeLimit) {
+Repository.prototype.getCommitChain = function(firstCommitId, rangeLimit) {
 	var dirPromise = this.getDirectory();
 
 	return dirPromise.then(NodeGit.Repository.open).then(function(repoObject) {
 		var revWalk = NodeGit.Revwalk.create(repoObject);
-		// Sets commit as starting point for revWalk
-		revWalk.push(firstCommit);
-		// Hides nth generation parent of firstCommit and its ancestors
-		revWalk.hideRef(firstCommit + "~" + rangeLimit); // FIXME : Unsafe?
-		console.log("Ready to walk");
-		return revWalk.getCommits();
+
+		return NodeGit.Commit.lookup(repoObject, firstCommitId).then(function(commitObject) {
+			return commitObject.nthGenAncestor(rangeLimit);
+		}).then(function(limitCommit) {
+			// Sets commit as starting point for revWalk
+			revWalk.push(firstCommitId);
+			return revWalk.getCommitsUntil(function(currentCommit) {
+				// True until currentCommit matches limitCommit
+				return !(limitCommit.id().equal(currentCommit.id()));
+			});
+		});
 	}).then(function(commitList) {
 		var serializedCommitList = [];
 		for (commitObject of commitList) {
