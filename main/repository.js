@@ -62,11 +62,57 @@ Repository.prototype.testRepo = function() {
 	});
 }
 
+Repository.serializeReference = function(reference) {
+	var sRef = {
+		fullRef : reference.toString(),
+		name: reference.shorthand(),
+		id: reference.target().tostrS(),
+	}
+
+	// Same sames as the sub-directories in the git directory
+	if(reference.isBranch()) {
+		sRef.refType = "heads";
+	} else if (reference.isRemote()) {
+		sRef.refType = "remotes";
+	} else if (reference.isTag()) {
+		sRef.refType = "tags";
+	}
+
+	return sRef
+}
+
 Repository.prototype.getHead = function() {
 	var dirPromise = this.getDirectory();
 
 	return dirPromise.then(NodeGit.Repository.open).then(function(repoObject) {
 		return repoObject.head();
+	}).then(function(refObject){
+		return Repository.serializeReference(refObject);
+	})
+}
+
+Repository.prototype.getReferences = function() {
+	var dirPromise = this.getDirectory();
+
+	return dirPromise.then(NodeGit.Repository.open).then(function(repoObject) {
+		return repoObject.getReferences(NodeGit.Reference.TYPE.LISTALL);
+	}).then(function(refs) {
+		var serializedRefs = {};
+
+		refs.forEach(function(ref) {
+			var sRef = Repository.serializeReference(ref)
+
+			if(!sRef.refType) {
+				// Not a type we handle yet, continue
+				return;
+			} else if (typeof serializedRefs[sRef.refType] !== "object") {
+				serializedRefs[sRef.refType] = {};
+			}
+
+			serializedRefs[sRef.refType][sRef.name] = sRef;
+		});
+
+		return serializedRefs;
 	})
 }
 

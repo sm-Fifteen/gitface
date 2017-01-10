@@ -25,7 +25,7 @@ module.exports = function(electron, app, mainWindow) {
 		repo = new Repository(path);
 
 		repo.testRepo().then(function(repoData) {
-			ev.sender.send('changed-directory', repoData)
+			ev.sender.send('changed-directory', repoData);
 		});
 	})
 
@@ -33,11 +33,20 @@ module.exports = function(electron, app, mainWindow) {
 
 	})
 
-	ipc.on('get-head-ref', function(ev) {
-		// Either a commit (headless) or a branch ref, but always a "reference" object
-		repo.getHead().then(function(headRef){
-			ev.sender.send('reply-head-ref', headRef.toString());
-		});
+	ipc.on('get-ref-data', function(ev) {
+		// refData should mirror the git dir hierarchy
+		var refData = {}
+
+		Promise.all([
+			repo.getHead().then(function(head) {
+				refData['HEAD'] = head;
+			}),
+			repo.getReferences().then(function(refs) {
+				refData['refs'] = refs;
+			})
+		]).then(function(){
+			ev.sender.send('reply-ref-data', refData)
+		})
 	})
 
 	// First commit should be the last commit we know, so we get the current head at least once,

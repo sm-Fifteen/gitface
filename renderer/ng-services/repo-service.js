@@ -31,7 +31,15 @@ module.exports = function(gitface) {
 			ipc.on('changed-directory', function(ev, repoData) {
 				that.repoData = repoData;
 				events.changeDirectory.notify(repoData.dirPath);
+
+				if(repoData.isRepo) {
+					ipc.send('get-ref-data');
+				}
 			})
+
+			ipc.on('reply-ref-data', function(ev, refData) {
+				console.log(refData);
+			});
 
 			// subscribe and notify based on this :
 			// http://www.codelord.net/2015/05/04/angularjs-notifying-about-changes-from-services-to-controllers/
