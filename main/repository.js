@@ -127,9 +127,10 @@ Repository.prototype.getReferences = function() {
 		return repoObject.getReferences(NodeGit.Reference.TYPE.LISTALL);
 	}).then(function(refs) {
 		var serializedRefs = {};
+		var trackedPromises = [];
 
 		refs.forEach(function(ref) {
-			var sRef = Repository.serializeReference(ref)
+			var sRef = Repository.serializeReference(ref);
 
 			if(!sRef.refType) {
 				// Not a type we handle yet, continue
@@ -138,10 +139,19 @@ Repository.prototype.getReferences = function() {
 				serializedRefs[sRef.refType] = {};
 			}
 
+			if(ref.isBranch()) {
+				trackedPromises.push(NodeGit.Branch.upstream(ref).then(function(trackedRef) {
+					sRef['tracking'] = trackedRef.shorthand();
+				}));
+			}
+
 			serializedRefs[sRef.refType][sRef.name] = sRef;
 		});
 
-		return serializedRefs;
+		return Promise.all(trackedPromises).then(function() {
+			// Once all the promises for the head refs have resolved, the list is complete.
+			return serializedRefs;
+		});
 	})
 }
 
