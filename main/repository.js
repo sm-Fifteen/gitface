@@ -93,7 +93,7 @@ Repository.serializeCommit = function(commitObject) {
 	}
 
 	var sCommit = {
-		hash: commitObject.id(),
+		hash: commitObject.id().tostrS(),
 		parents: parentCommits,
 		author: {
 			name: commitObject.author().name(),
