@@ -43,6 +43,13 @@ gitface.controller('repoSelectorCtrl', ["$scope", "repoService", "$uibModalInsta
 	$scope.cloneUrl = "";
 }]);
 
+gitface.controller('CommitListCtrl', ["$scope", "repoService", function($scope, repoService) {
+	repoService.events.updateCommitList.subscribe($scope, function(ev, commitGens) {
+		$scope.commitGens = commitGens;
+		$scope.$apply();
+	});
+}]);
+
 gitface.controller('FileChangesCtrl', ["$scope", function($scope){
 	$scope.unstagedChanges = [{
 		label: 'repo',

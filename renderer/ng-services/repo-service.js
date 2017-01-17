@@ -29,7 +29,7 @@ module.exports = function(gitface) {
 
 			ipc.on('changed-directory', function(ev, repoData) {
 				that.repoData = repoData;
-				events.changeDirectory.notify(repoData.dirPath);
+				events.changeDirectory.notify([repoData.dirPath, repoData.isRepo]);
 
 				if(repoData.isRepo) {
 					ipc.send('get-ref-data');
@@ -48,8 +48,6 @@ module.exports = function(gitface) {
 				}
 
 				var commitGens = that.repoData.commits;
-
-				console.log(commitGens);
 
 				var lastGen = commitGens[commitGens.length - 1]; // peek
 
@@ -74,7 +72,7 @@ module.exports = function(gitface) {
 					lastGen = newGen;
 				}
 
-				console.log(commitGens);
+				events.updateCommitList.notify(commitGens);
 			});
 
 			// subscribe and notify based on this :
@@ -94,6 +92,7 @@ module.exports = function(gitface) {
 
 			var events = {
 				changeDirectory: new NgEvent('change-directory'),
+				updateCommitList: new NgEvent('update-commit-list'),
 			}
 
 			return {
