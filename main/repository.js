@@ -163,6 +163,8 @@ Repository.prototype.getCommitChain = function(firstCommitId, rangeLimit, includ
 
 		return NodeGit.Commit.lookup(repoObject, firstCommitId).then(function(firstCommitObject) {
 			return firstCommitObject.nthGenAncestor(rangeLimit).then(function(limitCommit) {
+				revWalk.sorting(NodeGit.Revwalk.SORT.TOPOLOGICAL | NodeGit.Revwalk.SORT.TIME);
+
 				// Sets commit as starting point for revWalk
 				revWalk.push(firstCommitId);
 				var revWalkPromise = revWalk.getCommitsUntil(function(currentCommit) {
