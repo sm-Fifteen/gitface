@@ -12,7 +12,6 @@ module.exports = function(gitface) {
 
 		var repoService = (function() {
 			this.repoData = undefined;
-			this.commits = {};
 			var that = this;
 
 			function openDirectoryPicker() {
@@ -38,12 +37,44 @@ module.exports = function(gitface) {
 			})
 
 			ipc.on('reply-ref-data', function(ev, refData) {
-				console.log(refData);
-				ipc.send('get-commit-chain', refData.HEAD.id, 15, true);
+				that.repoData.refs = refData;
+				ipc.send('get-commit-chain', refData.HEAD.id, 20, true);
 			});
 
 			ipc.on('reply-commit-chain', function(ev, commitChain) {
-				console.log(commitChain);
+				if(!that.repoData.commits) {
+					var headCommit = commitChain[that.repoData.refs.HEAD.id];
+					that.repoData.commits = [[headCommit]];
+				}
+
+				var commitGens = that.repoData.commits;
+
+				console.log(commitGens);
+
+				var lastGen = commitGens[commitGens.length - 1]; // peek
+
+				while(lastGen.length) {
+					var newGen = [];
+
+					// We only need to check grand-parents on the first parent, this is a chain, not a tree.
+					for (var idx = 0; idx < lastGen[0].parents.length; idx++) {
+						var parentId = lastGen[0].parents[idx];
+						var parentCommit = commitChain[parentId];
+
+						if(!parentCommit) {
+							// If some other parents were available, we'll get them all next time.
+							newGen = [];
+							break;
+						}
+
+						newGen.push(parentCommit);
+					}
+
+					if (newGen.length) commitGens.push(newGen);
+					lastGen = newGen;
+				}
+
+				console.log(commitGens);
 			});
 
 			// subscribe and notify based on this :
