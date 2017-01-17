@@ -161,15 +161,24 @@ Repository.prototype.getCommitChain = function(firstCommitId, rangeLimit, includ
 	return dirPromise.then(NodeGit.Repository.open).then(function(repoObject) {
 		var revWalk = NodeGit.Revwalk.create(repoObject);
 
-		return NodeGit.Commit.lookup(repoObject, firstCommitId).then(function(commitObject) {
-			return commitObject.nthGenAncestor(rangeLimit);
-		}).then(function(limitCommit) {
-			// Sets commit as starting point for revWalk
-			revWalk.push(firstCommitId);
-			return revWalk.getCommitsUntil(function(currentCommit) {
-				// True until currentCommit matches limitCommit
-				return !(limitCommit.id().equal(currentCommit.id()));
-			});
+		return NodeGit.Commit.lookup(repoObject, firstCommitId).then(function(firstCommitObject) {
+			return firstCommitObject.nthGenAncestor(rangeLimit).then(function(limitCommit) {
+				// Sets commit as starting point for revWalk
+				revWalk.push(firstCommitId);
+				var revWalkPromise = revWalk.getCommitsUntil(function(currentCommit) {
+					// True until currentCommit matches limitCommit
+					return !(limitCommit.id().equal(currentCommit.id()));
+				});
+
+				if(includeFirst) {
+					var revWalkPromise = revWalkPromise.then(function(commitList) {
+						commitList.unshift(firstCommitObject);
+						return commitList;
+					})
+				}
+
+				return revWalkPromise;
+			})
 		}).then(function(commitList) {
 			var serializedCommitList = [];
 
@@ -177,16 +186,7 @@ Repository.prototype.getCommitChain = function(firstCommitId, rangeLimit, includ
 				serializedCommitList.push(Repository.serializeCommit(commitObject));
 			}
 
-			if(includeFirst) {
-				// Return promise with list
-				return repoObject.getCommit(firstCommitId).then(function (firstCommitObject) {
-					serializedCommitList.unshift(Repository.serializeCommit(firstCommitObject));
-					return serializedCommitList;
-				})
-			} else {
-				// Autobox list in promise
-				return serializedCommitList;
-			}
+			return serializedCommitList;
 		});
 	})
 }
