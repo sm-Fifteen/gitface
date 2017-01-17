@@ -180,13 +180,14 @@ Repository.prototype.getCommitChain = function(firstCommitId, rangeLimit, includ
 				return revWalkPromise;
 			})
 		}).then(function(commitList) {
-			var serializedCommitList = [];
+			var serializedCommitDict = {};
 
 			for (commitObject of commitList) {
-				serializedCommitList.push(Repository.serializeCommit(commitObject));
+				var sCommit = Repository.serializeCommit(commitObject);
+				serializedCommitDict[sCommit.hash] = sCommit;
 			}
 
-			return serializedCommitList;
+			return serializedCommitDict;
 		});
 	})
 }
