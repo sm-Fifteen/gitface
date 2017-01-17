@@ -16,7 +16,7 @@ gitface.constant('ipc', require('electron').ipcRenderer);
 gitface.controller('mainUiCtrl', ["$scope", "repoService", "$uibModal", function($scope, repoService, $uibModal){
 	$scope.openRepoSelector = function() {
 		var repoSelector = $uibModal.open({
-			templateUrl: 'selectRepo.html',
+			templateUrl: 'views/select-repo.html',
 			controller: 'repoSelectorCtrl',
 			controllerAs: '$ctrl',
 			size: 'lg',
