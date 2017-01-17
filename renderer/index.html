@@ -3,7 +3,10 @@
 	<head>
 		<meta charset="UTF-8">
 		<title>Hello World!</title>
-		<link href="node_modules/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet" type="text/css" media="all" />
+		<link href="../node_modules/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet" type="text/css" media="all" />
+		<link href="../node_modules/angular-ivh-treeview/dist/ivh-treeview.css" rel="stylesheet" type="text/css" media="all" />
+		<link href="../node_modules/angular-ivh-treeview/dist/ivh-treeview-theme-basic.css" rel="stylesheet" type="text/css" media="all" />
+
 		<link href="assets/css/main-ui.css" rel="stylesheet" type="text/css" />
 		<link href="assets/icons/atlas.svg" type="image/svg+xml" />
 	</head>
@@ -18,15 +21,8 @@
 				<input type="text" class="form-control" ng-value="cwd" readonly placeholder="No directory selected">
 			</div>
 		</header>
-
-		<main>
-			<h1>Main view!</h1>
-			<!-- All of the Node.js APIs are available in this renderer process. -->
-			We are using Node.js {{nodeVersion}},
-			Chromium {{chromeVersion}},
-			and Electron {{electronVersion}}.
-			<br/>
-		</main>
+		<button ng-click="testStatus()">Status</button>
+		<ng-include src="'views/commit-list-view.html'"></ng-include>
 	</body>
 
 	<script>

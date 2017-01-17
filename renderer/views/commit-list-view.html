@@ -1,0 +1,9 @@
+<div ng-controller="CommitListCtrl">
+  <div>
+		<ol>
+			<li ng-repeat="commitGen in commitGens">
+				<span ng-repeat="commit in commitGen">{{commit.hash}} + </span>
+			</li>
+		</ol>
+  </div>
+</div>
