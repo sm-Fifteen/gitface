@@ -12,9 +12,9 @@
 	</head>
 	<body ng-app="gitface" ng-controller="mainUiCtrl as ctrl">
 		<header>
-			<div class="input-group input-group">
-				<div class="input-group-btn input-group-sm">
-					<button id="testOpenRepo" ng-click="openRepoSelector()" class="btn btn-sm">
+			<div id="headerSelector" class="input-group input-group">
+				<div  id="openRepoBtn" class="input-group-btn input-group-sm">
+					<button ng-click="openRepoSelector()" class="btn btn-sm">
 					<svg class="svg-icon"><use xlink:href="assets/icons/atlas.svg#git-scm"></use></svg>
 					</button>
 				</div>

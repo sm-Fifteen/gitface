@@ -1,5 +1,21 @@
-.btn-sm > .svg-icon {
+#headerSelector {
+	display: flex;
+	align-items: stretch;
+}
+
+#headerSelector > * {
+	width: auto;
+	display: flex;
+}
+
+#headerSelector > input {
+	display: flex;
+	flex-grow: 1;
+}
+
+#openRepoBtn .svg-icon {
 	display: inline-block;
-	height: 18px;
-	width: 18px;
+	height: 1.5em;
+	width: 1.5em;
+	vertical-align: middle;
 }
