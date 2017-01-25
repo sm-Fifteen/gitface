@@ -155,7 +155,7 @@ Repository.prototype.getReferences = function() {
 	})
 }
 
-Repository.prototype.getCommitChain = function(firstCommitId, rangeLimit, includeFirst) {
+Repository.prototype.getCommitChain = function(firstCommitId, rangeLimit) {
 	var dirPromise = this.getDirectory();
 
 	return dirPromise.then(NodeGit.Repository.open).then(function(repoObject) {
@@ -171,13 +171,6 @@ Repository.prototype.getCommitChain = function(firstCommitId, rangeLimit, includ
 					// True until currentCommit matches limitCommit
 					return !(limitCommit.id().equal(currentCommit.id()));
 				});
-
-				if(includeFirst) {
-					var revWalkPromise = revWalkPromise.then(function(commitList) {
-						commitList.unshift(firstCommitObject);
-						return commitList;
-					})
-				}
 
 				return revWalkPromise;
 			})

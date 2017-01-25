@@ -38,7 +38,7 @@ module.exports = function(gitface) {
 
 			ipc.on('reply-ref-data', function(ev, refData) {
 				that.repoData.refs = refData;
-				ipc.send('get-commit-chain', refData.HEAD.id, 20, true);
+				ipc.send('get-commit-chain', refData.HEAD.id, 20);
 			});
 
 			ipc.on('reply-commit-chain', function(ev, commitChain) {
