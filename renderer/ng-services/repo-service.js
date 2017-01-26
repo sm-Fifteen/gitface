@@ -27,6 +27,19 @@ module.exports = function(gitface) {
 				});
 			}
 
+			function getHeadRef() {
+				return that.repoData.refData.refs.heads[that.repoData.refData.HEAD];
+			}
+
+			function getHeadId() {
+				var headRef = getHeadRef();
+				if (headRef === undefined) {
+					// Most likely a commit id
+					return that.repoData.refData.HEAD;
+				}
+				return headRef.id;
+			}
+
 			ipc.on('changed-directory', function(ev, repoData) {
 				that.repoData = repoData;
 				events.changeDirectory.notify([repoData.dirPath, repoData.isRepo]);
@@ -37,13 +50,14 @@ module.exports = function(gitface) {
 			})
 
 			ipc.on('reply-ref-data', function(ev, refData) {
-				that.repoData.refs = refData;
-				ipc.send('get-commit-chain', [refData.HEAD.id], 20);
+				that.repoData.refData = refData;
+				ipc.send('get-commit-chain', [getHeadId()], 20);
 			});
 
 			ipc.on('reply-commit-chain', function(ev, commitChain) {
+				console.log(that.repoData.refs)
 				if(!that.repoData.commits) {
-					var headCommit = commitChain[that.repoData.refs.HEAD.id];
+					var headCommit = commitChain[getHeadId()];
 					that.repoData.commits = [[headCommit]];
 				}
 

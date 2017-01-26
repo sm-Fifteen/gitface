@@ -38,15 +38,15 @@ module.exports = function(electron, app, mainWindow) {
 		var refData = {}
 
 		Promise.all([
-			repo.getHead().then(function(head) {
-				refData['HEAD'] = head;
+			repo.getHead().then(function(headName) {
+				refData['HEAD'] = headName;
 			}),
 			repo.getReferences().then(function(refs) {
 				refData['refs'] = refs;
 			})
 		]).then(function(){
 			ev.sender.send('reply-ref-data', refData)
-		})
+		}).catch(console.log)
 	})
 
 	// First commit should be the last commit we know, so we get the current head at least once,

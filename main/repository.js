@@ -117,7 +117,7 @@ Repository.prototype.getHead = function() {
 	return dirPromise.then(NodeGit.Repository.open).then(function(repoObject) {
 		return repoObject.head();
 	}).then(function(refObject){
-		return Repository.serializeReference(refObject);
+		return refObject.shorthand();
 	})
 }
 
