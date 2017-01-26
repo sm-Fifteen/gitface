@@ -51,9 +51,8 @@ module.exports = function(electron, app, mainWindow) {
 
 	// First commit should be the last commit we know, so we get the current head at least once,
 	// then the renderer should query for the last commit we sent it.
-	ipc.on('get-commit-chain', function(ev, firstCommit, rangeLimit, includeFirst) {
-		console.log("Got message")
-		repo.getCommitChain(firstCommit, rangeLimit).then(function(serializedCommitList){
+	ipc.on('get-commit-chain', function(ev, firstCommits, rangeLimit, includeFirst) {
+		repo.getCommitChain(firstCommits, rangeLimit).then(function(serializedCommitList){
 			ev.sender.send('reply-commit-chain', serializedCommitList)
 		}).catch(function(e){
 			console.error(e);

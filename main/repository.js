@@ -1,6 +1,7 @@
 const fs = require('fs');
 const Promise = require('promise')
 const NodeGit = require("nodegit");
+const _ = require("lodash");
 
 // Notes about references :
 // Check the manpage for git-rev-parse
@@ -155,25 +156,37 @@ Repository.prototype.getReferences = function() {
 	})
 }
 
-Repository.prototype.getCommitChain = function(firstCommitId, rangeLimit) {
+Repository.prototype.getCommitChain = function(firstCommitsIds, rangeLimit) {
 	var dirPromise = this.getDirectory();
 
 	return dirPromise.then(NodeGit.Repository.open).then(function(repoObject) {
 		var revWalk = NodeGit.Revwalk.create(repoObject);
 
-		return NodeGit.Commit.lookup(repoObject, firstCommitId).then(function(firstCommitObject) {
-			return firstCommitObject.nthGenAncestor(rangeLimit).then(function(limitCommit) {
-				revWalk.sorting(NodeGit.Revwalk.SORT.TOPOLOGICAL | NodeGit.Revwalk.SORT.TIME);
+		var nthGenAncestorPromises = [];
 
-				// Sets commit as starting point for revWalk
-				revWalk.push(firstCommitId);
-				var revWalkPromise = revWalk.getCommitsUntil(function(currentCommit) {
-					// True until currentCommit matches limitCommit
-					return !(limitCommit.id().equal(currentCommit.id()));
-				});
+		console.log(firstCommitsIds)
 
-				return revWalkPromise;
+		// Sets commit as starting point for revWalk
+		firstCommitsIds.forEach(function(commitId) {
+			revWalk.push(commitId);
+
+			var nthGenAncestorPromise = NodeGit.Commit.lookup(repoObject, commitId).then(function(firstCommitObject) {
+				return firstCommitObject.nthGenAncestor(rangeLimit)
 			})
+			nthGenAncestorPromises.push(nthGenAncestorPromise);
+		})
+
+		return Promise.all(nthGenAncestorPromises).then(function(limitCommits) {
+			revWalk.sorting(NodeGit.Revwalk.SORT.TOPOLOGICAL | NodeGit.Revwalk.SORT.TIME);
+
+			var revWalkPromise = revWalk.getCommitsUntil(function(currentCommit) {
+				// Stop when we reach any commit's 20th parent.
+				return !_.some(limitCommits, function(limitCommit) {
+					return limitCommit.id().equal(currentCommit.id());
+				})
+			});
+
+			return revWalkPromise;
 		}).then(function(commitList) {
 			var serializedCommitDict = {};
 
