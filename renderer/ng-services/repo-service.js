@@ -28,14 +28,14 @@ module.exports = function(gitface) {
 			}
 
 			function getHeadRef() {
-				return that.repoData.refData.refs.heads[that.repoData.refData.HEAD];
+				return that.repoData.refs.heads[that.repoData.HEAD];
 			}
 
 			function getHeadId() {
 				var headRef = getHeadRef();
 				if (headRef === undefined) {
 					// Most likely a commit id
-					return that.repoData.refData.HEAD;
+					return that.repoData.HEAD;
 				}
 				return headRef.id;
 			}
@@ -50,7 +50,8 @@ module.exports = function(gitface) {
 			})
 
 			ipc.on('reply-ref-data', function(ev, refData) {
-				that.repoData.refData = refData;
+				that.repoData.HEAD = refData.HEAD;
+				that.repoData.refs = refData.refs;
 				ipc.send('get-commit-chain', [getHeadId()], 20);
 			});
 
