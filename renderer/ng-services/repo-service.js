@@ -27,6 +27,33 @@ module.exports = function(gitface) {
 				});
 			}
 
+			function expandCommitChain(commitGens, branchCommits) {
+				var lastGen = commitGens[commitGens.length - 1]; // peek
+
+				while(lastGen.length) {
+					var newGen = [];
+
+					// We only need to check grand-parents on the first parent, this is a chain, not a tree.
+					for (var idx = 0; idx < lastGen[0].parents.length; idx++) {
+						var parentId = lastGen[0].parents[idx];
+						var parentCommit = branchCommits[parentId];
+
+						if(!parentCommit) {
+							// If some other parents were available, we'll get them all next time.
+							newGen = [];
+							break;
+						}
+
+						newGen.push(parentCommit);
+					}
+
+					if (newGen.length) commitGens.push(newGen);
+					lastGen = newGen;
+				}
+
+				return commitGens; // For good measure, even though we just modified the input.
+			}
+
 			ipc.on('changed-directory', function(ev, repoData) {
 				that.repoData = repoData;
 				events.changeDirectory.notify([repoData.dirPath, repoData.isRepo]);
@@ -66,39 +93,16 @@ module.exports = function(gitface) {
 				ipc.send('get-commit-chain', [that.repoData.HEAD.id], 20);
 			});
 
-			ipc.on('reply-commit-chain', function(ev, commitChain) {
+			ipc.on('reply-commit-chain', function(ev, branchCommits) {
 				console.log(that.repoData)
 				if(!that.repoData.commits) {
-					var headCommit = commitChain[that.repoData.HEAD.id];
+					var headCommit = branchCommits[that.repoData.HEAD.id];
 					that.repoData.commits = [[headCommit]];
 				}
 
-				var commitGens = that.repoData.commits;
+				expandCommitChain(that.repoData.commits, branchCommits);
 
-				var lastGen = commitGens[commitGens.length - 1]; // peek
-
-				while(lastGen.length) {
-					var newGen = [];
-
-					// We only need to check grand-parents on the first parent, this is a chain, not a tree.
-					for (var idx = 0; idx < lastGen[0].parents.length; idx++) {
-						var parentId = lastGen[0].parents[idx];
-						var parentCommit = commitChain[parentId];
-
-						if(!parentCommit) {
-							// If some other parents were available, we'll get them all next time.
-							newGen = [];
-							break;
-						}
-
-						newGen.push(parentCommit);
-					}
-
-					if (newGen.length) commitGens.push(newGen);
-					lastGen = newGen;
-				}
-
-				events.updateCommitList.notify(commitGens);
+				events.updateCommitList.notify(that.repoData.commits);
 			});
 
 			// subscribe and notify based on this :
