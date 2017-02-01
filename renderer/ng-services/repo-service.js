@@ -27,19 +27,6 @@ module.exports = function(gitface) {
 				});
 			}
 
-			function getHeadRef() {
-				return that.repoData.refs.heads[that.repoData.HEAD];
-			}
-
-			function getHeadId() {
-				var headRef = getHeadRef();
-				if (headRef === undefined) {
-					// Most likely a commit id
-					return that.repoData.HEAD;
-				}
-				return headRef.id;
-			}
-
 			ipc.on('changed-directory', function(ev, repoData) {
 				that.repoData = repoData;
 				events.changeDirectory.notify([repoData.dirPath, repoData.isRepo]);
@@ -50,15 +37,39 @@ module.exports = function(gitface) {
 			})
 
 			ipc.on('reply-ref-data', function(ev, refData) {
-				that.repoData.HEAD = refData.HEAD;
+				that.repoData._HEAD = refData.HEAD;
 				that.repoData.refs = refData.refs;
-				ipc.send('get-commit-chain', [getHeadId()], 20);
+
+				if(that.repoData.HEAD === undefined) {
+					Object.defineProperty(that.repoData, "HEAD", {
+						get: function() {
+							if (this._HEAD === undefined) {
+								return undefined;
+							}
+
+							var headRefObj = this.refs.heads[this._HEAD];
+
+							if (headRefObj === undefined) {
+								// TODO : Find a more robust way to resolve other refs in general, the HEAD can technically be anything.
+								headRefObj = {
+									fullRef: this._HEAD,
+									id: this._HEAD,
+									name: this._HEAD,
+								}
+							}
+
+							return headRefObj;
+						}
+					})
+				}
+
+				ipc.send('get-commit-chain', [that.repoData.HEAD.id], 20);
 			});
 
 			ipc.on('reply-commit-chain', function(ev, commitChain) {
-				console.log(that.repoData.refs)
+				console.log(that.repoData)
 				if(!that.repoData.commits) {
-					var headCommit = commitChain[getHeadId()];
+					var headCommit = commitChain[that.repoData.HEAD.id];
 					that.repoData.commits = [[headCommit]];
 				}
 
