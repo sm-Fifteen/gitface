@@ -12,7 +12,31 @@ module.exports = function(gitface) {
 		})
 
 		var repoService = (function() {
-			this.repoData = undefined;
+			this.repoData = {
+				_HEAD: undefined,
+				commits: {},
+				refs: {},
+				isRepo: undefined,
+				dirPath: undefined,
+				get HEAD() {
+					if (this._HEAD === undefined) {
+						return undefined;
+					}
+
+					var headRefObj = this.refs.heads[this._HEAD];
+
+					if (headRefObj === undefined) {
+						// TODO : Find a more robust way to resolve other refs in general, the HEAD can technically be anything.
+						headRefObj = {
+							fullRef: this._HEAD,
+							id: this._HEAD,
+							name: this._HEAD,
+						}
+					}
+
+					return headRefObj;
+				},
+			};
 			var that = this;
 
 			function openDirectoryPicker() {
@@ -72,7 +96,7 @@ module.exports = function(gitface) {
 			}
 
 			ipc.on('changed-directory', function(ev, repoData) {
-				that.repoData = repoData;
+				_.assign(that.repoData, repoData);
 				events.changeDirectory.notify([repoData.dirPath, repoData.isRepo]);
 
 				if(repoData.isRepo) {
@@ -95,35 +119,11 @@ module.exports = function(gitface) {
 				that.repoData.refs = refData.refs;
 				that.repoData._HEAD = refData.HEAD;
 
-				if(that.repoData.HEAD === undefined) {
-					Object.defineProperty(that.repoData, "HEAD", {
-						get: function() {
-							if (this._HEAD === undefined) {
-								return undefined;
-							}
-
-							var headRefObj = this.refs.heads[this._HEAD];
-
-							if (headRefObj === undefined) {
-								// TODO : Find a more robust way to resolve other refs in general, the HEAD can technically be anything.
-								headRefObj = {
-									fullRef: this._HEAD,
-									id: this._HEAD,
-									name: this._HEAD,
-								}
-							}
-
-							return headRefObj;
-						}
-					})
-				}
-
 				events.updateRefs.notify(that.repoData.HEAD);
 			});
 
 			ipc.on('reply-commit-chain', function(ev, branchCommits) {
 				console.log(that.repoData)
-				if(!that.repoData.commits) that.repoData.commits = [];
 
 				_.assign(that.repoData.commits, branchCommits);
 
