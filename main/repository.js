@@ -142,7 +142,7 @@ Repository.prototype.getReferences = function() {
 
 			if(ref.isBranch()) {
 				trackedPromises.push(NodeGit.Branch.upstream(ref).then(function(trackedRef) {
-					sRef['tracking'] = trackedRef.shorthand();
+					sRef['_tracking'] = trackedRef.shorthand();
 				}));
 			}
 

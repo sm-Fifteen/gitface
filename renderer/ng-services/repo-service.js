@@ -64,8 +64,19 @@ module.exports = function(gitface) {
 			})
 
 			ipc.on('reply-ref-data', function(ev, refData) {
-				that.repoData._HEAD = refData.HEAD;
+				for (var refName of Object.getOwnPropertyNames(refData.refs.heads)) {
+					var refObject = refData.refs.heads[refName];
+					Object.defineProperty(refObject, "tracking", {
+						get: function() {
+							if(this._tracking) {
+								return refData.refs.remotes[this._tracking];
+							}
+						}
+					})
+				}
+
 				that.repoData.refs = refData.refs;
+				that.repoData._HEAD = refData.HEAD;
 
 				if(that.repoData.HEAD === undefined) {
 					Object.defineProperty(that.repoData, "HEAD", {
