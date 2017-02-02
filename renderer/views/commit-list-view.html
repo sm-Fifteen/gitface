@@ -2,7 +2,7 @@
   <div>
 		<ol>
 			<li ng-repeat="commitGen in commitGens">
-				<span ng-repeat="commit in commitGen">{{commit.hash}} + </span>
+				<span ng-repeat="commit in commitGen">{{commit.hash | limitTo:7}} + </span>
 			</li>
 		</ol>
   </div>
