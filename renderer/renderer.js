@@ -44,8 +44,32 @@ gitface.controller('repoSelectorCtrl', ["$scope", "repoService", "$uibModalInsta
 }]);
 
 gitface.controller('CommitListCtrl', ["$scope", "repoService", function($scope, repoService) {
-	repoService.events.updateCommitList.subscribe($scope, function(ev, commitGens) {
-		$scope.commitGens = commitGens;
+	$scope.refs = [];
+	$scope.commitChains = {};
+
+	repoService.events.updateRefs.subscribe($scope, function(ev, headRef) {
+		$scope.refs = [];
+		$scope.refs.push(headRef);
+
+		var trackedRemote = headRef.tracking;
+		if (trackedRemote !== undefined) {
+			$scope.refs.push(trackedRemote);
+		}
+
+		// Just so we have something to start our chains with
+		repoService.getSomeCommits(_.map($scope.refs, "id"));
+	})
+
+	repoService.events.updateCommitList.subscribe($scope, function(ev) {
+		$scope.refs.forEach(function(refObject) {
+			// TODO : Optimize *later*, we only have to update the tail
+			var commitChain = repoService.buildCommitChain(refObject);
+			$scope.commitChains[refObject.name] = commitChain;
+		})
+
+		// FIXME : Placeholder
+		$scope.commitGens = $scope.commitChains[$scope.refs[0].name];
+
 		$scope.$apply();
 	});
 }]);

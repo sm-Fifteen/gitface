@@ -1,4 +1,5 @@
 const Promise = require('promise');
+const _ = require('lodash');
 
 module.exports = function(gitface) {
 	gitface.factory('repoService', ['$rootScope', 'ipc', function($rootScope, ipc) {
@@ -27,7 +28,23 @@ module.exports = function(gitface) {
 				});
 			}
 
-			function expandCommitChain(commitGens, branchCommits) {
+			function getSomeCommits(firstCommitsList) {
+				ipc.send('get-commit-chain', firstCommitsList, 20);
+			}
+
+			function buildCommitChain(refObject) {
+				var refHeadCommit = that.repoData.commits[refObject.id];
+				if (refHeadCommit === undefined) {
+					console.error("Undefined ref commit, shouldn't be happenning")
+					console.error(that.repoData.commits);
+					return [[]];
+				}
+				var commitChain = [[refHeadCommit]];
+				extendCommitChain(commitChain);
+				return commitChain;
+			}
+
+			function extendCommitChain(commitGens) {
 				var lastGen = commitGens[commitGens.length - 1]; // peek
 
 				while(lastGen.length) {
@@ -36,7 +53,7 @@ module.exports = function(gitface) {
 					// We only need to check grand-parents on the first parent, this is a chain, not a tree.
 					for (var idx = 0; idx < lastGen[0].parents.length; idx++) {
 						var parentId = lastGen[0].parents[idx];
-						var parentCommit = branchCommits[parentId];
+						var parentCommit = that.repoData.commits[parentId];
 
 						if(!parentCommit) {
 							// If some other parents were available, we'll get them all next time.
@@ -101,19 +118,16 @@ module.exports = function(gitface) {
 					})
 				}
 
-				ipc.send('get-commit-chain', [that.repoData.HEAD.id], 20);
+				events.updateRefs.notify(that.repoData.HEAD);
 			});
 
 			ipc.on('reply-commit-chain', function(ev, branchCommits) {
 				console.log(that.repoData)
-				if(!that.repoData.commits) {
-					var headCommit = branchCommits[that.repoData.HEAD.id];
-					that.repoData.commits = [[headCommit]];
-				}
+				if(!that.repoData.commits) that.repoData.commits = [];
 
-				expandCommitChain(that.repoData.commits, branchCommits);
+				_.assign(that.repoData.commits, branchCommits);
 
-				events.updateCommitList.notify(that.repoData.commits);
+				events.updateCommitList.notify();
 			});
 
 			// subscribe and notify based on this :
@@ -133,11 +147,15 @@ module.exports = function(gitface) {
 
 			var events = {
 				changeDirectory: new NgEvent('change-directory'),
+				updateRefs: new NgEvent('update-refs'),
 				updateCommitList: new NgEvent('update-commit-list'),
 			}
 
 			return {
 				openDirectoryPicker: openDirectoryPicker,
+				getSomeCommits: getSomeCommits,
+				buildCommitChain: buildCommitChain,
+				extendCommitChain: extendCommitChain,
 				events: events,
 			}
 		})();
