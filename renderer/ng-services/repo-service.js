@@ -12,32 +12,36 @@ module.exports = function(gitface) {
 		})
 
 		var repoService = (function() {
-			this.repoData = {
-				_HEAD: undefined,
-				commits: {},
-				refs: {},
-				isRepo: undefined,
-				dirPath: undefined,
-				get HEAD() {
-					if (this._HEAD === undefined) {
-						return undefined;
-					}
-
-					var headRefObj = this.refs.heads[this._HEAD];
-
-					if (headRefObj === undefined) {
-						// TODO : Find a more robust way to resolve other refs in general, the HEAD can technically be anything.
-						headRefObj = {
-							fullRef: this._HEAD,
-							id: this._HEAD,
-							name: this._HEAD,
-						}
-					}
-
-					return headRefObj;
-				},
-			};
+			this.repoData = initRepoData();
 			var that = this;
+
+			function initRepoData() {
+				return {
+					_HEAD: undefined,
+					commits: {},
+					refs: {},
+					isRepo: undefined,
+					dirPath: undefined,
+					get HEAD() {
+						if (this._HEAD === undefined) {
+							return undefined;
+						}
+
+						var headRefObj = this.refs.heads[this._HEAD];
+
+						if (headRefObj === undefined) {
+							// TODO : Find a more robust way to resolve other refs in general, the HEAD can technically be anything.
+							headRefObj = {
+								fullRef: this._HEAD,
+								id: this._HEAD,
+								name: this._HEAD,
+							}
+						}
+
+						return headRefObj;
+					},
+				};
+			}
 
 			function openDirectoryPicker() {
 				return new Promise(function(resolve, reject) {
@@ -96,6 +100,7 @@ module.exports = function(gitface) {
 			}
 
 			ipc.on('changed-directory', function(ev, repoData) {
+				that.repoData = initRepoData();
 				_.assign(that.repoData, repoData);
 				events.changeDirectory.notify([repoData.dirPath, repoData.isRepo]);
 
