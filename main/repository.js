@@ -144,6 +144,8 @@ Repository.prototype.getReferences = function() {
 			if(ref.isBranch()) {
 				trackedPromises.push(NodeGit.Branch.upstream(ref).then(function(trackedRef) {
 					sRef['_tracking'] = trackedRef.shorthand();
+				}).catch(function(e) {
+					// Branch doesn't track any remote branch, safe to dismiss.
 				}));
 			}
 
