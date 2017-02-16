@@ -100,7 +100,18 @@ module.exports = function(gitface) {
 			}
 
 			function getCommitDistance(localCommitId, upstreamCommitId) {
+				// This one returns a promise because there's a limit
+				// to how much async I'm willing to put up with.
+				var distancePromise = new Promise(function(fulfill, reject) {
+					ipc.on('reply-commit-distance', function(ev, localId, upstreamId, aheadBehind) {
+						if(localCommitId === localId && upstreamCommitId === upstreamId) {
+							fulfill(aheadBehind);
+						}
+					});
+				})
+
 				ipc.send('get-commit-distance', localCommitId, upstreamCommitId);
+				return distancePromise;
 			}
 
 			ipc.on('changed-directory', function(ev, repoData) {
@@ -165,6 +176,7 @@ module.exports = function(gitface) {
 				getSomeCommits: getSomeCommits,
 				buildCommitChain: buildCommitChain,
 				extendCommitChain: extendCommitChain,
+				getCommitDistance: getCommitDistance,
 				events: events,
 			}
 		})();

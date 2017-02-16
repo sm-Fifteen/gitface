@@ -67,10 +67,17 @@ gitface.controller('CommitListCtrl', ["$scope", "repoService", function($scope, 
 			$scope.commitChains[refObject.name] = commitChain;
 		})
 
-		// FIXME : Placeholder
-		$scope.commitGens = $scope.commitChains[$scope.refs[0].name];
+		if($scope.refs.length === 2) {
+			repoService.getCommitDistance($scope.refs[0].id, $scope.refs[1].id).then(function(aheadBehind){
+				console.log(aheadBehind);
+				$scope.commitGens = $scope.commitChains[$scope.refs[0].name];
+				$scope.$apply();
+			})
+		} else {
+			$scope.commitGens = $scope.commitChains[$scope.refs[0].name];
 
-		$scope.$apply();
+			$scope.$apply();
+		}
 	});
 }]);
 

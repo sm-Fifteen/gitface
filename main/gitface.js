@@ -61,7 +61,8 @@ module.exports = function(electron, app, mainWindow) {
 
 	ipc.on('get-commit-distance', function(ev, localCommitId, upstreamCommitId) {
 		repo.getCommitDistance(localCommitId, upstreamCommitId).then(function(aheadBehind) {
-			ev.sender.send('reply-commit-distance', aheadBehind);
+			// Specify the IDs in the reply so we can tell multiple requests appart.
+			ev.sender.send('reply-commit-distance', localCommitId, upstreamCommitId, aheadBehind);
 		})
 	})
 
