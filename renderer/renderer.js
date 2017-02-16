@@ -69,12 +69,13 @@ gitface.controller('CommitListCtrl', ["$scope", "repoService", function($scope, 
 
 		if($scope.refs.length === 2) {
 			repoService.getCommitDistance($scope.refs[0].id, $scope.refs[1].id).then(function(aheadBehind){
-				console.log(aheadBehind);
-				$scope.commitGens = $scope.commitChains[$scope.refs[0].name];
+				$scope.aheadCommitGens = $scope.commitChains[$scope.refs[0].name].slice(0, aheadBehind.ahead);
+				$scope.behindCommitGens = $scope.commitChains[$scope.refs[1].name].slice(0, aheadBehind.behind);
+				$scope.sharedCommitGens = $scope.commitChains[$scope.refs[0].name].slice(aheadBehind.ahead);
 				$scope.$apply();
 			})
 		} else {
-			$scope.commitGens = $scope.commitChains[$scope.refs[0].name];
+			$scope.sharedCommitGens = $scope.commitChains[$scope.refs[0].name];
 
 			$scope.$apply();
 		}
