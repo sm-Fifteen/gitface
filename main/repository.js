@@ -179,14 +179,22 @@ Repository.prototype.getCommitChain = function(firstCommitsIds, rangeLimit) {
 			nthGenAncestorPromises.push(nthGenAncestorPromise);
 		})
 
-		return Promise.all(nthGenAncestorPromises).then(function(limitCommits) {
-			revWalk.sorting(NodeGit.Revwalk.SORT.TOPOLOGICAL | NodeGit.Revwalk.SORT.TIME);
+		revWalk.sorting(NodeGit.Revwalk.SORT.TOPOLOGICAL | NodeGit.Revwalk.SORT.TIME);
 
+		return Promise.all(nthGenAncestorPromises).then(function(limitCommits) {
 			var revWalkPromise = revWalk.getCommitsUntil(function(currentCommit) {
 				// Stop when we reach any commit's 20th parent.
 				return !_.some(limitCommits, function(limitCommit) {
 					return limitCommit.id().equal(currentCommit.id());
 				})
+			});
+
+			return revWalkPromise;
+		}).catch(function() {
+			// At least one commit has less than `rangeLimit` ancestors
+			var revWalkPromise = revWalk.getCommitsUntil(function(currentCommit) {
+				// Stop when we reach the last commit (i.e : Get all remaining commits)
+				return currentCommit.parentcount() !== 0;
 			});
 
 			return revWalkPromise;
