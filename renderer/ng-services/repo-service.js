@@ -99,6 +99,10 @@ module.exports = function(gitface) {
 				return commitGens; // For good measure, even though we just modified the input.
 			}
 
+			function getCommitDistance(localCommitId, upstreamCommitId) {
+				ipc.send('get-commit-distance', localCommitId, upstreamCommitId);
+			}
+
 			ipc.on('changed-directory', function(ev, repoData) {
 				that.repoData = initRepoData();
 				_.assign(that.repoData, repoData);

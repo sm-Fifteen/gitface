@@ -59,6 +59,12 @@ module.exports = function(electron, app, mainWindow) {
 		});
 	})
 
+	ipc.on('get-commit-distance', function(ev, localCommitId, upstreamCommitId) {
+		repo.getCommitDistance(localCommitId, upstreamCommitId).then(function(aheadBehind) {
+			ev.sender.send('reply-commit-distance', aheadBehind);
+		})
+	})
+
 	ipc.on('git-status', function(ev) {
 		return repo.getDirectory().then(NodeGit.Repository.open).then(function(repoObject) {
 			return repoObject.getStatus();

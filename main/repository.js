@@ -153,6 +153,17 @@ Repository.prototype.getReferences = function() {
 	})
 }
 
+Repository.prototype.getCommitDistance = function(localCommitId, upstreamCommitId) {
+	var dirPromise = this.getDirectory();
+
+	localCommitId = NodeGit.Oid.fromString(localCommitId);
+	upstreamCommitId = NodeGit.Oid.fromString(upstreamCommitId);
+
+	return dirPromise.then(NodeGit.Repository.open).then(function(repoObject) {
+		return NodeGit.Graph.aheadBehind(repoObject, localCommitId, upstreamCommitId)
+	})
+}
+
 Repository.prototype.getCommitChain = function(firstCommitsIds, rangeLimit) {
 	var dirPromise = this.getDirectory();
 
