@@ -83,15 +83,9 @@ Repository.serializeReference = function(reference) {
 }
 
 Repository.serializeCommit = function(commitObject) {
-	var nParents = commitObject.parentcount();
-	// Git normally labels its parents so that commit^0 is the commit itself
-	// Libgit considers parent 0 to be the first parent instead.
-	var parentCommits = [];
-
-	// TODO : Replace this bit with .parents() is possible, couldn't get it to work.
-	for (var i = 0; i < nParents; i++) {
-		parentCommits.push(commitObject.parentId(i).tostrS());
-	}
+	var parentCommits = _.map(commitObject.parents(), function(parentOid) {
+		return parentOid.tostrS();
+	});
 
 	var sCommit = {
 		hash: commitObject.id().tostrS(),
